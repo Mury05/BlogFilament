@@ -117,7 +117,7 @@ class UserResource extends Resource
                         ->same('new_password'),
                 ])
                 ->icon('heroicon-o-key')
-                ->visible(fn (): bool => auth()->user()->role === "super-admin"),
+                ->visible(fn (): bool => Auth::user()->role === "super-admin"),
 
 
                 Action::make('changeRole')
