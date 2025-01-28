@@ -2,20 +2,34 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
 
 class Comment extends Model
 {
-    //relation entre post et comment
-    public function post()
+    use HasFactory;
+
+    protected $table = 'comments';
+
+    protected $guarded = [];
+
+    protected $casts = [
+        'is_visible' => 'boolean',
+    ];
+
+    public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
     }
 
-
-    //relation entre user et comment
-    public function user()
+    
+    public function commentable(): MorphTo
     {
-        return $this->belongsTo(User::class);
+        return $this->morphTo();
     }
+
+    
 }

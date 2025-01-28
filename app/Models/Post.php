@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Post extends Model
 {
@@ -31,9 +32,11 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    //la relation entre post et comment
+    /** @return MorphMany<Comment> */
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->morphMany(Comment::class, 'commentable');
     }
+
+
 }
