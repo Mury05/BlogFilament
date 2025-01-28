@@ -26,9 +26,14 @@ class Post extends Model
         return $this->belongsToMany(Tag::class);
     }
 
-    public function author(){
+    public function author()
+    {
         return $this->belongsTo(User::class);
     }
 
-
+    //la relation entre post et comment
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }
