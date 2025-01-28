@@ -3,32 +3,33 @@
 namespace App\Filament\Resources\CommentResource\Pages;
 
 use App\Filament\Resources\CommentResource;
-use Filament\Actions;
-use Filament\Forms\Components\BelongsToSelect;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateComment extends CreateRecord
 {
     protected static string $resource = CommentResource::class;
 
-    protected function getFormSchema(): array
+    public function form(Forms\Form $form): Forms\Form
     {
-        return [
-            Textarea::make('content')
-                ->required()
-                ->maxLength(500)
-                ->label('Contenu'),
-            
-            BelongsToSelect::make('post_id')
-                ->relationship('post', 'title')
-                ->required()
-                ->label('Article'),
-            
-            BelongsToSelect::make('user_id')
-                ->relationship('user', 'name')
-                ->nullable()
-                ->label('Auteur'),
-        ];
+        return $form
+            ->schema([
+                Forms\Components\TextInput::make('title')
+                    ->required(),
+
+                Forms\Components\Select::make('customer_id')
+                    ->relationship('customer', 'name')
+                    ->searchable()
+                    ->required(),
+
+                Forms\Components\Toggle::make('is_visible')
+                    ->label('Approved for public')
+                    ->default(true),
+
+                Forms\Components\MarkdownEditor::make('content')
+                    ->required()
+                    ->label('Content'),
+            ])
+            ->columns(1);
     }
 }
