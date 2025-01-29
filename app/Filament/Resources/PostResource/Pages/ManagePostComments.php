@@ -47,8 +47,8 @@ class ManagePostComments extends ManageRelatedRecords
                 Forms\Components\TextInput::make('title')
                     ->required(),
 
-                Forms\Components\Select::make('customer_id')
-                    ->relationship('customer', 'name')
+                Forms\Components\Select::make('author_id')
+                    ->relationship('author', 'name')
                     ->searchable()
                     ->required(),
 
@@ -69,9 +69,10 @@ class ManagePostComments extends ManageRelatedRecords
             ->columns(1)
             ->schema([
                 TextEntry::make('title'),
-                TextEntry::make('customer.name'),
-                IconEntry::make('is_visible')
-                    ->label('Visibility'),
+                TextEntry::make('author.name')
+                    ->label('Author'),
+                // IconEntry::make('is_visible')
+                //     ->label('Visibility'),
                 TextEntry::make('content')
                     ->markdown(),
             ]);
@@ -87,14 +88,14 @@ class ManagePostComments extends ManageRelatedRecords
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Customer')
+                Tables\Columns\TextColumn::make('author.name')
+                    ->label('Author')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('is_visible')
-                    ->label('Visibility')
-                    ->sortable(),
+                // Tables\Columns\IconColumn::make('is_visible')
+                //     ->label('Visibility')
+                //     ->sortable(),
             ])
             ->filters([
                 //
