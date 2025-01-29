@@ -36,7 +36,10 @@ class PostResource extends Resource
     protected static ?string $navigationGroup = 'Blog Management';
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
     public static function form(Form $form): Form
     {
         $user = Auth::user();
@@ -49,7 +52,7 @@ class PostResource extends Resource
                     ->afterStateUpdated(fn($state, callable $set) => $set('slug', Str::slug($state))), // Génération automatique du slug
 
                 Forms\Components\TextInput::make('slug')
-                ->readonly()
+                    ->readonly()
                     ->maxLength(255),
 
                 Forms\Components\MarkdownEditor::make('content')
@@ -119,7 +122,7 @@ class PostResource extends Resource
                             ->afterStateUpdated(fn($state, callable $set) => $set('slug', Str::slug($state))), // Génération automatique du slug
 
                         Forms\Components\TextInput::make('slug')
-                        ->readonly()
+                            ->readonly()
                             ->unique(Tag::class, 'slug', ignoreRecord: true),
                     ])
                     ->label('Tags')->columnSpan('full'),
