@@ -3,18 +3,29 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PostResource\Pages;
+use Filament\Forms\Components\SpatieTagsInput;
 use App\Filament\Resources\PostResource\RelationManagers;
 use App\Models\Post;
+use Filament\Pages\SubNavigationPosition;
+use Filament\Resources\Pages\Page;
 use App\Models\Tag;
+use App\Filament\Resources\PostResource\Pages\ManagePostComments;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Infolists\Components;
+use Filament\Infolists\Infolist;    
+use Filament\Modals\Modal;
+use Filament\Tables\Actions\Action;
 use Filament\Tables;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use View;
 
 class PostResource extends Resource
 {
@@ -24,6 +35,7 @@ class PostResource extends Resource
 
     protected static ?string $navigationGroup = 'Blog Management';
 
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
@@ -137,19 +149,25 @@ class PostResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('category.name')
-                    ->label('Category')
-                    ->sortable()
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('category.name')
+                //     ->label('Category')
+                //     ->sortable()
+                //     ->searchable(),
 
                 Tables\Columns\TextColumn::make('author.name')
                     ->label('Author')
+                    ->badge()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->colors([
+                        'primary' => 'blue',
+                    ]),
 
 
 
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
                     ->formatStateUsing(function ($state) {
                         return match ($state) {
                             'draft' => 'Draft',
@@ -158,22 +176,30 @@ class PostResource extends Resource
                             default => $state,
                         };
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->colors([
+                        'success' => 'published',
+                    ]),
 
-                Tables\Columns\TextColumn::make('tags.name')
-                    ->label('Tags')
-                    ->separator(', ')
-                    ->limit(3),
+                // Tables\Columns\TextColumn::make('tags.name')
+                //     ->label('Tags')
+                //     ->separator(', ')
+                //     ->limit(3),
 
-                Tables\Columns\TextColumn::make('published_at')
-                    ->dateTime()
-                    ->label('Published At')
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('published_at')
+                //     ->dateTime()
+                //     ->label('Published At')
+                //     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->label('Created At')
                     ->sortable(),
+
+
+                // IconColumn::make('More actions')
+                //     ->label('More actions')
+                //     // ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category')
@@ -194,11 +220,61 @@ class PostResource extends Resource
                     ->label('Tags'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Components\Section::make()
+                    ->schema([
+                        Components\Split::make([
+                            Components\Grid::make(2)
+                                ->schema([
+                                    Components\Group::make([
+                                        Components\TextEntry::make('title'),
+                                        Components\TextEntry::make('slug'),
+                                        Components\TextEntry::make('published_at')
+                                            ->badge()
+                                            ->date()
+                                            ->color('success'),
+                                    ]),
+                                    Components\Group::make([
+                                        Components\TextEntry::make('author.name'),
+                                        Components\TextEntry::make('category.name'),
+                                        Components\TextEntry::make('tags'),
+                                    ]),
+                                ]),
+                            Components\ImageEntry::make('image')
+                                ->hiddenLabel()
+                                ->grow(false),
+                        ])->from('lg'),
+                    ]),
+                Components\Section::make('Content')
+                    ->schema([
+                        Components\TextEntry::make('content')
+                            ->prose()
+                            ->markdown()
+                            ->hiddenLabel(),
+                    ])
+                    ->collapsible(),
+            ]);
+    }
+    
+    public static function getRecordSubNavigation(Page $page): array
+    {
+        return $page->generateNavigationItems([
+            Pages\ViewPost::class,
+            Pages\EditPost::class,
+            Pages\ManagePostComments::class,
+        ]);
     }
 
 
@@ -214,7 +290,26 @@ class PostResource extends Resource
         return [
             'index' => Pages\ListPosts::route('/'),
             'create' => Pages\CreatePost::route('/create'),
+            'comments' => Pages\ManagePostComments::route('/{record}/comments'),
             'edit' => Pages\EditPost::route('/{record}/edit'),
+            'view' => Pages\ViewPost::route('/{record}'),
         ];
     }
+
+
+    // public static function getGlobalSearchResultDetails(Model $record): array
+    // {
+    //     /** @var Post $record */
+    //     $details = [];
+
+    //     if ($record->author) {
+    //         $details['Author'] = $record->author->name;
+    //     }
+
+    //     if ($record->category) {
+    //         $details['Category'] = $record->category->name;
+    //     }
+
+    //     return $details;
+    // }
 }
