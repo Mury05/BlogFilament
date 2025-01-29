@@ -11,11 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Schema::create('comments', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->text('content');
+        //     $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
+        //     $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
+        //     $table->timestamps();
+        // });
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->text('content');
             $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
+            $table->morphs('commentable');
+            $table->text('title')->nullable();
+            $table->text('content')->nullable();
+            $table->boolean('is_visible')->default(false);
+
             $table->timestamps();
         });
     }
