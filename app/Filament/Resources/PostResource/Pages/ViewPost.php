@@ -13,7 +13,7 @@ class ViewPost extends ViewRecord
 
     public function getTitle(): string | Htmlable
     {
-        /** @var  */
+        /** @var  Post*/
         $record = $this->getRecord();
 
         return $record->title;

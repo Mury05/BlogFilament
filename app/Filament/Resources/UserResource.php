@@ -13,6 +13,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ViewAction;
@@ -40,6 +41,10 @@ class UserResource extends Resource
     }
 
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -98,26 +103,30 @@ class UserResource extends Resource
                 // Tables\Actions\EditAction::make(),
 
                 Action::make('changePassword')
-                ->action(function (User $record, array $data): void {
-                    $record->update([
-                        'password' => Hash::make($data['new_password']),
-                    ]);
+                    ->action(function (User $record, array $data): void {
+                        $record->update([
+                            'password' => Hash::make($data['new_password']),
+                        ]);
 
-                    Filament::notify('success', 'Password changed successfully.');
-                })
-                ->form([
-                    Forms\Components\TextInput::make('new_password')
-                        ->password()
-                        ->label('New Password')
-                        ->required(),
-                    Forms\Components\TextInput::make('new_password_confirmation')
-                        ->password()
-                        ->label('Confirm New Password')
-                        ->rule('required', fn($get) => ! ! $get('new_password'))
-                        ->same('new_password'),
-                ])
-                ->icon('heroicon-o-key')
-                ->visible(fn (): bool => Auth::user()->role === "super-admin"),
+                        // Filament::notify('success', 'Password changed successfully.');
+                        Notification::make()
+                            ->title('Password changed successfully.')
+                            ->success()
+                            ->send();
+                    })
+                    ->form([
+                        Forms\Components\TextInput::make('new_password')
+                            ->password()
+                            ->label('New Password')
+                            ->required(),
+                        Forms\Components\TextInput::make('new_password_confirmation')
+                            ->password()
+                            ->label('Confirm New Password')
+                            ->rule('required', fn($get) => !!$get('new_password'))
+                            ->same('new_password'),
+                    ])
+                    ->icon('heroicon-o-key')
+                    ->visible(fn(): bool => Auth::user()->role === "super-admin"),
 
 
                 Action::make('changeRole')
@@ -126,7 +135,12 @@ class UserResource extends Resource
                             'role' => $data['new_role'],
                         ]);
 
-                        Filament::notify('success', 'Role updated successfully.');
+                        // Filament::notify('success', 'Role updated successfully.');
+                        Notification::make()
+                            ->title('Role updated successfully.')
+                            ->success()
+                            ->send();
+
                     })
                     ->form([
                         Forms\Components\Select::make('new_role')
@@ -146,7 +160,7 @@ class UserResource extends Resource
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make()->visible(fn(): bool => Auth::user()->role === "super-admin"),
-                    DeleteAction::make()->visible(fn(): bool => Auth::user()->role === "super-admin")
+                    Tables\Actions\DeleteAction::make()->visible(fn(): bool => Auth::user()->role === "super-admin")
                 ]),
 
             ])

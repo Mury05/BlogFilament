@@ -14,7 +14,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Infolists\Components;
-use Filament\Infolists\Infolist;    
+use Filament\Infolists\Infolist;
 use Filament\Modals\Modal;
 use Filament\Tables\Actions\Action;
 use Filament\Tables;
@@ -61,6 +61,7 @@ class PostResource extends Resource
 
 
 
+                // POur les super-admin et les admins
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name')
                     ->searchable()
@@ -71,14 +72,23 @@ class PostResource extends Resource
                             ->maxLength(255),
                         Forms\Components\Textarea::make('description')
                             ->required(),
-                    ])
+                    ])->visible(fn(): bool => Auth::user()->role === "super-admin" || Auth::user()->role === "admin")
                     // ->hidden(!$user->isAdmin() || !$user->isSuperAdmin())
                     ->required(),
+
+                // Pour l'utilisateur
+                Forms\Components\Select::make('category_id')
+                    ->relationship('category', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->visible(fn(): bool => Auth::user()->role === "user")
+                    ->required(),
+
+                // Pour le super-admin
 
                 Forms\Components\Select::make('author_id')
                     ->relationship('author', 'name')
                     ->searchable()
-                    ->preload()
                     ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('name')
@@ -93,10 +103,30 @@ class PostResource extends Resource
                             ->password()
                             ->required()
                             ->maxLength(255),
-                    ])
+                    ])->visible(fn(): bool => Auth::user()->role === "super-admin")
                     ->required()
-                    ->label('Author'),
+                    ->label('Author')
+                    ->hidden(fn(): bool => Auth::user()->role !== "super-admin"),
 
+                // Pour l'admin
+                Forms\Components\Select::make('author_id')
+                    ->relationship('author', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->visible(fn(): bool => Auth::user()->role === "admin")
+                    ->required()
+                    ->label('Author')
+                    ->hidden(fn(): bool => Auth::user()->role !== "admin"),
+
+                // Pour l'utilisateur
+
+
+                Forms\Components\TextInput::make('author_name')
+                    ->default(fn() => Auth::user()->name)
+                    ->disabled()
+                    ->label('Author')
+                    ->visible(fn(): bool => Auth::user()->role === "user")
+                    ->dehydrated(false), // Ne pas envoyer ce champ à la base de données
 
                 Forms\Components\DatePicker::make('published_at'),
 
@@ -110,6 +140,7 @@ class PostResource extends Resource
                     ->required(),
 
                 // Champ pour gérer les tags
+                // Admin et super-admin
                 Forms\Components\Select::make('tags')
                     ->multiple()
                     ->relationship('tags', 'name')
@@ -124,7 +155,14 @@ class PostResource extends Resource
                         Forms\Components\TextInput::make('slug')
                             ->readonly()
                             ->unique(Tag::class, 'slug', ignoreRecord: true),
-                    ])
+                    ])->visible(fn(): bool => Auth::user()->role === "super-admin" || Auth::user()->role === "admin")
+                    ->label('Tags')->columnSpan('full'),
+
+                // Pour l'utilisateur
+                Forms\Components\Select::make('tags')
+                    ->multiple()
+                    ->relationship('tags', 'name')
+                    ->visible(fn(): bool => Auth::user()->role === "user")
                     ->label('Tags')->columnSpan('full'),
 
                 Forms\Components\Section::make('Image')->schema([
@@ -177,9 +215,11 @@ class PostResource extends Resource
                         };
                     })
                     ->sortable()
-                    ->colors([
-                        'success' => 'published',
-                    ]),
+                    ->color(fn(string $state): string => match($state){
+                        'draft' => 'info',
+                        'published' => 'success',
+                        'archived' => 'danger',
+                    }),
 
                 // Tables\Columns\TextColumn::make('tags.name')
                 //     ->label('Tags')
@@ -192,7 +232,7 @@ class PostResource extends Resource
                 //     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->since()
                     ->label('Created At')
                     ->sortable(),
 
@@ -221,11 +261,11 @@ class PostResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->visible(fn($record): bool => Auth::user()->role === "super-admin" || Auth::user()->role === "admin" || Auth::user()->id === $record->author_id),
+                Tables\Actions\DeleteAction::make()->visible(fn($record): bool => Auth::user()->role === "super-admin" || Auth::user()->role === "admin" || Auth::user()->id === $record->author_id),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()->visible(fn(): bool => Auth::user()->role === "super-admin"),
             ]);
     }
 
@@ -249,10 +289,10 @@ class PostResource extends Resource
                                     Components\Group::make([
                                         Components\TextEntry::make('author.name'),
                                         Components\TextEntry::make('category.name'),
-                                        Components\TextEntry::make('tags'),
+                                        Components\TextEntry::make('tags.name'),
                                     ]),
                                 ]),
-                            Components\ImageEntry::make('image')
+                            Components\ImageEntry::make('image_cover')
                                 ->hiddenLabel()
                                 ->grow(false),
                         ])->from('lg'),
@@ -267,7 +307,7 @@ class PostResource extends Resource
                     ->collapsible(),
             ]);
     }
-    
+
     public static function getRecordSubNavigation(Page $page): array
     {
         return $page->generateNavigationItems([

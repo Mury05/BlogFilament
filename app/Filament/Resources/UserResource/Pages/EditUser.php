@@ -21,4 +21,8 @@ class EditUser extends EditRecord
         // Mettre le middleware CheckRole pour vérifier si l'utilisateur est admin ou super-admin
         protected static array|string $routeMiddleware = [SuperAdmin::class];
 
+        protected function getRedirectUrl(): string
+{
+    return $this->getResource()::getUrl('index');
+}
 }
