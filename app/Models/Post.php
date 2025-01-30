@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Spatie\Tags\HasTags;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Post extends Model
 {
+
+    use HasFactory;
+    use HasTags;
     protected $fillable = [
         'title',
         'slug',
@@ -37,6 +42,5 @@ class Post extends Model
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
-
 
 }

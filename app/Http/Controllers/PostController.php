@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    public function showMore(Post $post)
+    public function show($slug)
     {
-        // Passer les informations du post au modal
-        return view('posts.view-more', compact('post'));
+        $post = Post::where('slug', $slug)->firstOrFail();
+        return view('post', compact('post'));
     }
 }

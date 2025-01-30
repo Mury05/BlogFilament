@@ -19,6 +19,7 @@ use Filament\Modals\Modal;
 use Filament\Tables\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -35,7 +36,10 @@ class PostResource extends Resource
     protected static ?string $navigationGroup = 'Blog Management';
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
     public static function form(Form $form): Form
     {
         $user = Auth::user();
@@ -48,7 +52,7 @@ class PostResource extends Resource
                     ->afterStateUpdated(fn($state, callable $set) => $set('slug', Str::slug($state))), // Génération automatique du slug
 
                 Forms\Components\TextInput::make('slug')
-                ->readonly()
+                    ->readonly()
                     ->maxLength(255),
 
                 Forms\Components\MarkdownEditor::make('content')
@@ -118,7 +122,7 @@ class PostResource extends Resource
                             ->afterStateUpdated(fn($state, callable $set) => $set('slug', Str::slug($state))), // Génération automatique du slug
 
                         Forms\Components\TextInput::make('slug')
-                        ->readonly()
+                            ->readonly()
                             ->unique(Tag::class, 'slug', ignoreRecord: true),
                     ])
                     ->label('Tags')->columnSpan('full'),
@@ -152,12 +156,18 @@ class PostResource extends Resource
 
                 Tables\Columns\TextColumn::make('author.name')
                     ->label('Author')
+                    ->badge()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->colors([
+                        'primary' => 'blue',
+                    ]),
 
 
 
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
                     ->formatStateUsing(function ($state) {
                         return match ($state) {
                             'draft' => 'Draft',
@@ -166,7 +176,10 @@ class PostResource extends Resource
                             default => $state,
                         };
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->colors([
+                        'success' => 'published',
+                    ]),
 
                 // Tables\Columns\TextColumn::make('tags.name')
                 //     ->label('Tags')
@@ -184,7 +197,7 @@ class PostResource extends Resource
                     ->sortable(),
 
 
-                // Tables\Columns\TextColumn::make('More actions')
+                // IconColumn::make('More actions')
                 //     ->label('More actions')
                 //     // ->sortable(),
             ])
@@ -210,7 +223,6 @@ class PostResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

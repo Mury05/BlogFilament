@@ -1,20 +1,22 @@
 <?php
 
 use App\Http\Controllers\PostController;
-use App\Http\Livewire\PostDetailsModal;
+use App\Models\Post;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $posts = Post::latest()->take(6)->get(); // Récupère les 6 derniers posts
+    return view('welcome', compact('posts'));
 });
 
-// Route::get('/view-more/{post}', [PostController::class, 'post.details'])->name('view-more');
-Route::get('/post/{id}/details', [PostController::class, 'show'])->name('post.details');
-Route::get('/post/{id}/details', [PostController::class, 'show'])->name('post.edit');
+Route::get('/', function () {
+    $posts = Post::latest()->take(6)->get();
+    return view('welcome', compact('posts'));
+})->name('home');
 
 
-// Ajoutez cette ligne pour enregistrer le composant Livewire sur une route
-// Route::get('/post/{id}/details', PostDetailsModal::class)->name('post.details');
+Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
+
 
 
 
