@@ -177,9 +177,7 @@ class PostResource extends Resource
                         };
                     })
                     ->sortable()
-                    ->colors([
-                        'success' => 'published',
-                    ]),
+                    
 
                 // Tables\Columns\TextColumn::make('tags.name')
                 //     ->label('Tags')

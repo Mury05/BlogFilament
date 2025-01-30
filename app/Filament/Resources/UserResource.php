@@ -82,7 +82,8 @@ class UserResource extends Resource
                         'user' => 'info',
                         'admin' => 'success',
                         'super-admin' => 'success',
-                    })->sortable(),
+                    })
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')->since(),
             ])
