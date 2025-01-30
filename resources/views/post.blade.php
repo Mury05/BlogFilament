@@ -47,17 +47,9 @@
 
         <!-- Section Commentaires -->
         <div class="mt-8 p-4 border-t">
-            <h2 class="text-2xl font-semibold mb-4">Commentaires</h2>
-            @if($post->comments->count() > 0)
-                @foreach($post->comments as $comment)
-                <div class="mb-4 p-3 border rounded-md bg-gray-50">
-                    <p class="font-semibold">{{ $comment->user->name }} <span class="text-gray-500 text-xs">({{ $comment->created_at->format('d M Y H:i') }})</span></p>
-                    <p class="text-gray-700">{{ $comment->content }}</p>
-                </div>
-                @endforeach
-            @else
-                <p class="text-gray-500">Aucun commentaire pour cet article.</p>
-            @endif
+
+            @include('comment', ['post' => $post])
+
         </div>
 
         <!-- Retour Accueil -->
