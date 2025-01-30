@@ -9,7 +9,7 @@ use App\Models\Post;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Pages\Page;
 use App\Models\Tag;
-use App\Filament\Resources\PostResource\Pages\ManagePostComments;
+use App\Filament\Resources\PostResource\Pages\CreateComment;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -177,9 +177,11 @@ class PostResource extends Resource
                         };
                     })
                     ->sortable()
-                    ->colors([
-                        'success' => 'published',
-                    ]),
+                    ->color(fn(string $state): string => match ($state) {
+                        'draft' => 'info',
+                        'published' => 'success',
+                        'archived' => 'primary',
+                    }),
 
                 // Tables\Columns\TextColumn::make('tags.name')
                 //     ->label('Tags')
@@ -273,7 +275,7 @@ class PostResource extends Resource
         return $page->generateNavigationItems([
             Pages\ViewPost::class,
             Pages\EditPost::class,
-            Pages\ManagePostComments::class,
+            Pages\CreateComment::class,
         ]);
     }
 
@@ -290,7 +292,7 @@ class PostResource extends Resource
         return [
             'index' => Pages\ListPosts::route('/'),
             'create' => Pages\CreatePost::route('/create'),
-            'comments' => Pages\ManagePostComments::route('/{record}/comments'),
+            'comments' => Pages\CreateComment::route('/{record}/comments'),
             'edit' => Pages\EditPost::route('/{record}/edit'),
             'view' => Pages\ViewPost::route('/{record}'),
         ];
