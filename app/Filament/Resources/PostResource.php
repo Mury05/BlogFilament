@@ -177,9 +177,11 @@ class PostResource extends Resource
                         };
                     })
                     ->sortable()
-                    ->colors([
-                        'success' => 'published',
-                    ]),
+                    ->color(fn(string $state): string => match ($state) {
+                        'draft' => 'info',
+                        'published' => 'success',
+                        'archived' => 'primary',
+                    }),
 
                 // Tables\Columns\TextColumn::make('tags.name')
                 //     ->label('Tags')

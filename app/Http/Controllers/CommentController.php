@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Comment;
+use App\Models\Post;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class CommentController extends Controller
+{
+    public function store(Request $request)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+            'post_id' => 'required|exists:posts,id'
+        ]);
+
+        $post = Post::findOrFail($request->post_id);
+        $post->comments()->create([
+            'content' => $request->content, 
+            'author_id' => Auth::id(),
+            'post_id' => $post->id, // Ajout de la clé étrangère post_id
+        ]);
+
+        return redirect()->route('posts.show', $post->id)->with('success', 'Commentaire ajouté avec succès');
+    }
+
+    
+
+    public function destroy(Comment $comment)
+    {
+        // Vérifier que l'utilisateur est bien celui qui a posté le commentaire
+        if ($comment->author_id !== Auth::id()) {
+            return redirect()->route('posts.show', $comment->post_id)->with('error', 'Vous ne pouvez supprimer que vos propres commentaires.');
+        }
+
+        $comment->delete();
+        return redirect()->route('posts.show', $comment->post_id)->with('success', 'Commentaire supprimé.');
+    }
+}
