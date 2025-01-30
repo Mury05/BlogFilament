@@ -27,6 +27,37 @@ class CommentController extends Controller
     }
 
     
+    public function edit($id)
+    {
+        $comment = Comment::findOrFail($id);
+
+        // Vérifie si l'utilisateur est bien celui qui a créé le commentaire
+        if ($comment->author_id !== Auth::id()) {
+            return redirect()->route('post.show', $comment->post_id)->with('error', 'Vous ne pouvez modifier que vos propres commentaires.');
+        }
+
+        return view('comment.edit', compact('comment'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        $comment = Comment::findOrFail($id);
+
+        // Vérifie si l'utilisateur est bien celui qui a créé le commentaire
+        if ($comment->author_id !== Auth::id()) {
+            return redirect()->route('posts.show', $comment->post_id)->with('error', 'Vous ne pouvez modifier que vos propres commentaires.');
+        }
+
+        // Met à jour le commentaire
+        $comment->content = $request->content;
+        $comment->save();
+
+        return redirect()->route('posts.show', $comment->post_id)->with('success', 'Commentaire mis à jour avec succès.');
+    }
 
     public function destroy(Comment $comment)
     {

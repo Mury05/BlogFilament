@@ -21,8 +21,35 @@
                 </form>
 
                 <!-- Lien pour modifier le commentaire -->
-                <a href="{{ route('comments.edit', $comment->id) }}" class="text-blue-600 hover:text-blue-800 mt-2 inline-block">Modifier ce commentaire</a>
+                <button data-modal-toggle="edit-comment-modal-{{ $comment->id }}" class="text-blue-600 hover:text-blue-800 mt-2 inline-block">Modifier ce commentaire</button>
+            
             @endif
+        </div>
+
+
+        <!-- Modal de modification -->
+        <div id="edit-comment-modal-{{ $comment->id }}" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-50 flex justify-center items-center">
+            <div class="relative p-4 bg-white rounded-lg w-96">
+                <form action="{{ route('comments.update', $comment->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <h3 class="text-lg font-semibold mb-4">Modifier le commentaire</h3>
+
+                    <div class="mb-4">
+                        <textarea name="content" rows="4" class="w-full p-2 border rounded-md" required>{{ old('content', $comment->content) }}</textarea>
+                    </div>
+
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Mettre à jour le commentaire</button>
+
+                    <!-- Bouton pour fermer le modal -->
+                    <button type="button" data-modal-toggle="edit-comment-modal-{{ $comment->id }}" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
         </div>
     @endforeach
 
@@ -43,3 +70,14 @@
         <p class="text-gray-500 mt-4">Vous devez être connecté pour ajouter un commentaire.</p>
     @endauth
 </div>
+
+<script>
+    // Script pour ouvrir et fermer les modals
+    document.querySelectorAll('[data-modal-toggle]').forEach(button => {
+        button.addEventListener('click', () => {
+            const modalId = button.getAttribute('data-modal-toggle');
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+        });
+    });
+</script>
