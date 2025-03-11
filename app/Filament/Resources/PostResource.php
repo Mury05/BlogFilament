@@ -181,11 +181,16 @@ class PostResource extends Resource
 
                 Tables\Columns\TextColumn::make('title')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->limit(15)
+                    ->tooltip(fn($record) => $record->title),
 
                 Tables\Columns\TextColumn::make('slug')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->limit(15)
+                    ->tooltip(fn($record) => $record->slug),
+
 
                 // Tables\Columns\TextColumn::make('category.name')
                 //     ->label('Category')
@@ -215,7 +220,7 @@ class PostResource extends Resource
                         };
                     })
                     ->sortable()
-                    ->color(fn(string $state): string => match($state){
+                    ->color(fn(string $state): string => match ($state) {
                         'draft' => 'info',
                         'published' => 'success',
                         'archived' => 'danger',
@@ -288,8 +293,11 @@ class PostResource extends Resource
                                     ]),
                                     Components\Group::make([
                                         Components\TextEntry::make('author.name'),
-                                        Components\TextEntry::make('category.name'),
-                                        Components\TextEntry::make('tags.name'),
+                                        Components\TextEntry::make('category.name')
+                                        ->badge()
+                                        ->color('success'),
+                                        Components\TextEntry::make('tags.name')->badge()
+                                        ->color('info'),
                                     ]),
                                 ]),
                             Components\ImageEntry::make('image_cover')

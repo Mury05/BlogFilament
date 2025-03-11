@@ -25,7 +25,7 @@
 
                 <!-- Bouton "Lire plus" plus petit et bien aligné -->
                 <div class="mt-4">
-                    <a href="{{ route('posts.show', $post->slug) }}" 
+                    <a href="{{ route('posts.show', $post->slug) }}"
                        class="inline-block bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition text-sm">
                         Lire plus
                     </a>

@@ -17,6 +17,7 @@ class CreatePost extends CreateRecord
             $data['author_id'] = Auth::id();
             return $data;
         }
+        return $data;
 
     }
 
